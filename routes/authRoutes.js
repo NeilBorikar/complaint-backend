@@ -32,16 +32,29 @@ router.post("/register", async (req, res) => {
 
 // LOGIN
 router.post("/login", async (req, res) => {
+  console.log("🔥 LOGIN ROUTE HIT");
+  console.log("📥 Incoming Body:", req.body);
+
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
-    if (!user)
+
+    console.log("🔍 User Found:", user);
+
+    if (!user) {
+      console.log("❌ User not found");
       return res.status(400).json({ msg: "Invalid credentials" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+
+    console.log("🔑 Password Match:", isMatch);
+
+    if (!isMatch) {
+      console.log("❌ Password incorrect");
       return res.status(400).json({ msg: "Invalid credentials" });
+    }
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -49,8 +62,11 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    console.log("✅ Login successful");
+
     res.json({ token });
   } catch (err) {
+    console.log("💥 ERROR:", err.message);
     res.status(500).json({ msg: err.message });
   }
 });
